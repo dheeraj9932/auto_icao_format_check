@@ -30,6 +30,8 @@ header {
 }
 header h1 { margin: 0 0 0.25rem; font-size: 1.35rem; }
 header .sub { margin: 0; color: var(--muted); font-size: 0.9rem; }
+.header-badges { display: flex; align-items: center; gap: 0.6rem; }
+button.compact { padding: 0.32rem 0.7rem; font-size: 0.85rem; }
 .badge {
   background: #eef2ff; color: var(--accent);
   padding: 0.3rem 0.7rem; border-radius: 999px;

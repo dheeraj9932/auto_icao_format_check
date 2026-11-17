@@ -24,7 +24,7 @@ function init() {
     'upload-card', 'dropzone', 'file-input', 'workspace', 'preview', 'scores',
     'output-canvas', 'download-btn', 'autocrop-btn', 'rotate-left', 'rotate-right',
     'straighten', 'reset-crop', 'toggle-landmarks', 'toggle-guides',
-    'model-status', 'offline-badge', 'crop-status', 'file-name', 'output-card',
+    'model-status', 'offline-badge', 'crop-status', 'file-name', 'output-card', 'new-image-btn',
   ]) {
     els[id] = $(id);
   }
@@ -111,8 +111,10 @@ async function onFile(file) {
     els['upload-card'].classList.add('hidden');
     els['workspace'].classList.remove('hidden');
     els['output-card'].classList.remove('hidden');
+    els['new-image-btn'].classList.remove('hidden');
     state.hasImage = true;
     redraw();
+    scheduleRescore();   // score the fresh upload immediately
     updateCropStatus();
     setStatus('Ready.', 'ok');
   } catch (err) {
@@ -194,6 +196,8 @@ function scheduleRescore(throttleOnly = false) {
 // ---------------- controls ----------------
 
 function wireControls() {
+  els['new-image-btn'].addEventListener('click', () => els['file-input'].click());
+
   els['autocrop-btn'].addEventListener('click', () => {
     applyAutoCrop();
     redraw();

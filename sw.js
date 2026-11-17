@@ -1,5 +1,5 @@
 // Cache-first service worker: after first visit the app works fully offline.
-const VERSION = 'icao-v1.0.0';
+const VERSION = 'icao-v1.1.0';
 const CACHE = VERSION;
 
 const PRECACHE = [
