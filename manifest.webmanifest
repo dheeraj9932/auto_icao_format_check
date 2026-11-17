@@ -1,0 +1,15 @@
+{
+  "name": "ICAO Passport Photo Checker",
+  "short_name": "ICAO Photo",
+  "description": "Client-side ICAO passport photo checker and cropper for the Indian 630x810 spec.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f4f8",
+  "theme_color": "#1e293b",
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

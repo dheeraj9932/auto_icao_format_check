@@ -1,0 +1,10 @@
+{
+  "name": "auto_icao_format_check",
+  "version": "1.0.0",
+  "description": "Client-side ICAO passport photo checker and cropper (Indian embassy 630x810 spec).",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node test/run.mjs"
+  }
+}

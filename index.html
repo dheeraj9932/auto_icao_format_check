@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ICAO Passport Photo Checker</title>
+  <meta name="description" content="Client-side ICAO-compliant passport photo checker and cropper for the Indian 630x810 spec. Photos never leave your device.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>ICAO Passport Photo Checker</h1>
+      <p class="sub">Indian embassy spec · 630×810 px · runs entirely in your browser — no photo is ever uploaded.</p>
+    </div>
+    <div class="header-badges">
+      <span id="offline-badge" class="badge">…</span>
+    </div>
+  </header>
+
+  <main>
+    <section id="upload-card" class="card">
+      <div id="dropzone" tabindex="0">
+        <p class="big">Drop a photo here</p>
+        <p>or click to choose · you can also paste from the clipboard (Ctrl+V)</p>
+        <input type="file" id="file-input" accept="image/*">
+      </div>
+      <p id="file-name" class="muted"></p>
+    </section>
+
+    <section id="workspace" class="workspace hidden">
+      <div class="card preview-card">
+        <div class="toolbar">
+          <button id="autocrop-btn">Auto-crop</button>
+          <button id="reset-crop">Reset crop</button>
+          <button id="rotate-left" title="Rotate left">↺</button>
+          <button id="rotate-right" title="Rotate right">↻</button>
+          <label class="toggle"><input type="checkbox" id="straighten"> Straighten</label>
+          <label class="toggle"><input type="checkbox" id="toggle-landmarks"> Landmarks</label>
+          <label class="toggle"><input type="checkbox" id="toggle-guides" checked> Guides</label>
+        </div>
+        <canvas id="preview"></canvas>
+        <p class="muted">Drag the box to move · drag a corner handle to resize · scores update live.</p>
+        <p id="crop-status" class="warn-text"></p>
+      </div>
+
+      <div class="card score-card">
+        <div id="model-status" class="status">Idle</div>
+        <div id="scores"></div>
+      </div>
+    </section>
+
+    <section id="output-card" class="card output-card hidden">
+      <div class="output-left">
+        <h3>Final image — 630×810</h3>
+        <canvas id="output-canvas" width="630" height="810"></canvas>
+      </div>
+      <div class="output-right">
+        <button id="download-btn" class="primary">Download passport_630x810.jpg</button>
+        <p class="muted">JPEG quality 92. The image is only cropped and rescaled — no filters, per the “unaltered by software” guideline.</p>
+        <p class="muted">This tool is advisory. The embassy / CKGS decides what is accepted.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>
+      Scoring based on
+      <a href="./docs/icao_guidelines.pdf" target="_blank" rel="noopener">Indian Embassy Berlin — Guidelines for ICAO Compliant Photographs</a>
+      and ICAO 930-3 geometry. Pose and head-size numbers are estimates.
+    </p>
+  </footer>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
