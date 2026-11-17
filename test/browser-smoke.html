@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>smoke</title></head>
+<body>
+<pre id="result">running…</pre>
+<script type="module">
+import { CONFIG } from '../js/config.js';
+import { computeAutoCrop } from '../js/autocrop.js';
+import { computeAllMetrics } from '../js/metrics.js';
+import { analyze } from '../js/analyzer.js';
+
+const out = document.getElementById('result');
+const lines = [];
+window.addEventListener('error', (e) => lines.push(`window.onerror: ${e.filename}:${e.lineno} ${e.message}`));
+window.addEventListener('unhandledrejection', (e) => lines.push(`unhandledrejection: ${e.reason?.stack || e.reason?.message || String(e.reason)}`));
+try {
+  const fetches = ['vision_wasm_internal.js', 'vision_wasm_internal.wasm', 'face_landmarker.task', 'vision_bundle.mjs'];
+  for (const f of fetches) {
+    const r = await fetch('../vendor/tasks-vision/' + f, { method: 'HEAD' });
+    lines.push(`HEAD ${f}: ${r.status} ${r.headers.get('content-length')}B`);
+  }
+  const { FaceLandmarker, FilesetResolver } = await import('../vendor/tasks-vision/vision_bundle.mjs');
+  lines.push('bundle imported');
+  const fileset = await FilesetResolver.forVisionTasks('../vendor/tasks-vision');
+  lines.push('fileset ok: loader=' + fileset.wasmLoaderPath);
+  const opts = (delegate) => ({
+    baseOptions: { modelAssetPath: '../vendor/tasks-vision/face_landmarker.task', delegate },
+    runningMode: 'IMAGE',
+    numFaces: 5,
+    outputFaceBlendshapes: true,
+  });
+  let lm;
+  try {
+    lm = await FaceLandmarker.createFromOptions(fileset, opts('GPU'));
+    lines.push('GPU delegate ok');
+  } catch (err) {
+    lines.push('GPU failed: ' + (err?.stack || err?.message || String(err)).slice(0, 300));
+    lm = await FaceLandmarker.createFromOptions(fileset, opts('CPU'));
+    lines.push('CPU delegate ok');
+  }
+  lines.push(`model loaded (FaceLandmarker created)`);
+
+  // 630x810 gradient portrait-ish canvas, no real face: detect() must not throw
+  const c = document.createElement('canvas');
+  c.width = 1600; c.height = 1200;
+  const ctx = c.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 1600, 1200);
+  grad.addColorStop(0, '#ddd6c0');
+  grad.addColorStop(1, '#efe6d5');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1600, 1200);
+  ctx.fillStyle = '#2a3550';
+  ctx.beginPath();
+  ctx.ellipse(800, 560, 190, 260, 0, 0, Math.PI * 2);
+  ctx.fill();
+  const bitmap = await createImageBitmap(c);
+
+  const t1 = performance.now();
+  const faces = lm.detect(bitmap); // direct: only model call needed here
+  lines.push(`detect ok (${faces.faceLandmarks?.length ?? 0} faces) in ${((performance.now() - t1) / 1000).toFixed(2)}s`);
+
+  // full scoring pipeline on the render even without a face
+  const r = computeAutoCrop(null, 1600, 1200, CONFIG);
+  const out = document.createElement('canvas');
+  out.width = CONFIG.output.width; out.height = CONFIG.output.height;
+  const octx = out.getContext('2d');
+  octx.setTransform(r.transform.s, 0, 0, r.transform.s, r.transform.tx, r.transform.ty);
+  octx.drawImage(bitmap, 0, 0);
+  octx.setTransform(1, 0, 0, 1, 0, 0);
+  const img = octx.getImageData(0, 0, 630, 810);
+  const metrics = computeAllMetrics(img, null, CONFIG);
+  const a = analyze({ geomOut: null, blendshapes: null, metrics, cfg: CONFIG });
+  lines.push(`analysis ok: overall=${a.overall}, rules=${a.results.length}`);
+  lines.push('exposure.mean=' + metrics.exposure.mean.toFixed(1) + ' std=' + metrics.exposure.std.toFixed(1));
+  lines.push(a.results.filter((r) => r.category === 'exposure').map((r) => `${r.id}=${r.score}`).join(' '));
+
+  lines.push('SMOKE PASS');
+} catch (e) {
+  lines.push('SMOKE FAIL: ' + (e?.stack || e?.message || String(e)));
+}
+out.textContent = lines.join('\n');
+</script>
+</body>
+</html>
